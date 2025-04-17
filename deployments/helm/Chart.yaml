@@ -1,0 +1,10 @@
+apiVersion: v2
+name: customer-order-service-api
+description: Django API for customers and orders
+kind: ConfigMap
+metadata:
+  name: auth-config
+data:
+  OIDC_CLIENT_ID: "donfiles"
+  OIDC_CLIENT_SECRET: "donfiles.online"
+  OIDC_ISSUER: "https://your-oidc-provider.com"

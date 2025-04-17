@@ -1,0 +1,77 @@
+---
+- name: Deploy Django App
+  hosts: ubuntu_servers
+  become: yes
+  vars:
+    app_dir: /opt/customer-order-service-api
+    git_repo: 'https://github.com/your-repo/your-django-app.git'  # Replace with your GitHub repo URL
+    gunicorn_service: customer-order-service
+
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name:
+          - python3.11
+          - python3.11-venv
+          - postgresql
+          - libpq-dev
+        state: present
+        update_cache: yes
+
+    - name: Clone repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ app_dir }}"
+        version: "main"  # You can change this to the desired branch, tag, or commit
+        force: yes  # Ensure repository is cloned if not already present
+
+    - name: Create virtual environment
+      command: "python3.11 -m venv {{ app_dir }}/venv"
+      args:
+        creates: "{{ app_dir }}/venv"  # Avoid recreating the virtual environment if it already exists
+
+    - name: Install Python packages
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+        state: present
+
+    - name: Run Django migrations
+      command: "{{ app_dir }}/venv/bin/python manage.py migrate"
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Collect static files
+      command: "{{ app_dir }}/venv/bin/python manage.py collectstatic --noinput"
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Configure Gunicorn service for the Django app
+      copy:
+        dest: "/etc/systemd/system/{{ gunicorn_service }}.service"
+        content: |
+          [Unit]
+          Description=Gunicorn service for the Django app
+          After=network.target
+
+          [Service]
+          User=django
+          Group=django
+          WorkingDirectory={{ app_dir }}
+          ExecStart={{ app_dir }}/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 {{ app_dir }}.wsgi:application
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - Reload systemd
+
+    - name: Enable and start Gunicorn service
+      systemd:
+        name: "{{ gunicorn_service }}"
+        enabled: yes
+        state: restarted
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes

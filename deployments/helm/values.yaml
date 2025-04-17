@@ -1,0 +1,13 @@
+image:
+  repository: harmanmuasa/customer-order-service-api
+  tag: latest
+
+postgresql:
+  enabled: false  # Use external PostgreSQL
+
+ingress:
+  enabled: true
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
