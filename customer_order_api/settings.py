@@ -53,10 +53,32 @@ AUTHENTICATION_BACKENDS = [
     # update
     'graphql_jwt.backends.JSONWebTokenBackend',
     # 'users.backends.OIDCAuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
     'oidc_auth.auth.OIDCAuthenticationBackend',
 ]
+OIDC_RP_CLIENT_ID = os.getenv('OIDC_CLIENT_ID')
+OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_CLIENT_SECRET')
+KEYCLOAK_SERVER_URL = os.getenv('KEYCLOAK_SERVER_URL')
+OIDC_RP_REALM_NAME = os.getenv('KEYCLOAK_REALM')
+OIDC_VERIFY_SSL = True
 
-OIDC_ENDPOINT = "http://localhost:8080/realms/master/broker/keycloak-oidc/endpoint" 
+SOCIALACCOUNT_PROVIDERS = {
+    'openid_connect': {
+        'APPS': [
+            {
+                'provider_id': 'keycloak',
+                'name': 'Keycloak',
+                'client_id': 'OIDC_CLIENT_ID',
+                'secret': 'OIDC_CLIENT_SECRET',
+                'settings': {
+                    'server_url': 'OIDC_ENDPOINT',
+                },
+            }
+        ]
+    }
+}
+
+OIDC_ENDPOINT = "http://localhost:8080/realms/donfiles/broker/keycloak-oidc/endpoint" 
 OIDC_CLIENT_ID = os.getenv('OIDC_CLIENT_ID')
 OIDC_CLIENT_SECRET = os.getenv('OIDC_CLIENT_SECRET')
 
@@ -98,12 +120,14 @@ LOGIN_REDIRECT_URL = '/admin/'
 GRAPHENE = {
     'SCHEMA': 'customer_order_api.schema.schema',
      'MIDDLEWARE': [
+        "order_api.utils.authenitcation.JWTAuthMiddleware",
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }
 
 AUTHENTICATION_CLASSES = [
     'oidc_auth.authentication.JSONWebTokenAuthentication',
+    
 ]
 
 MIDDLEWARE = [
