@@ -23,7 +23,9 @@ class SMSService:
             print(f"SMS failed: {str(e)}")
             return None
 
+
 sms_service = SMSService()
+
 
 @receiver(post_save, sender=Order)
 def order_created_handler(sender, instance, created, **kwargs):

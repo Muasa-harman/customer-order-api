@@ -6,7 +6,7 @@ cffi==1.17.1
 charset-normalizer==3.4.1
 coverage==7.8.0
 cryptography==44.0.2
-Django==5.2
+Django==4.2.20
 django-environ==0.12.0
 django-graphql-jwt==0.3.4
 django-oidc-auth==0.0.11
@@ -25,7 +25,6 @@ pluggy==1.5.0
 promise==2.3
 psycopg2-binary==2.9.10
 pycparser==2.22
-pycrypto==2.6.1
 pyjwkest==0.6.2
 PyJWT==2.10.1
 pytest==8.3.5

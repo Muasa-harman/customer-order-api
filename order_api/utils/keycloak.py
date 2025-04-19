@@ -1,8 +1,8 @@
 # auth/backends.py
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
-from django.contrib.auth import get_user_model
-from django.conf import settings
+
 from keycloak import KeycloakOpenID
+
 
 class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     def __init__(self, *args, **kwargs):
@@ -48,9 +48,11 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             return False
         return True
 
+
 # auth/client.py
 from keycloak import KeycloakOpenID
 from django.conf import settings
+
 
 class KeycloakClient:
     def __init__(self):
@@ -61,26 +63,20 @@ class KeycloakClient:
             client_secret_key=settings.OIDC_RP_CLIENT_SECRET,
             verify=settings.OIDC_VERIFY_SSL
         )
-    
+
     def get_auth_url(self, redirect_uri, state=None):
         return self.client.auth_url(
             redirect_uri=redirect_uri,
             scope='openid email profile',
             state=state
         )
-    
+
     def get_tokens(self, code, redirect_uri):
         return self.client.token(
             grant_type='authorization_code',
             code=code,
             redirect_uri=redirect_uri
         )
-
-
-
-
-
-
 
 # from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 # from django.contrib.auth import get_user_model
@@ -91,7 +87,7 @@ class KeycloakClient:
 # User = get_user_model()
 
 # class KeycloakOIDCBackend(OIDCAuthenticationBackend):
-    
+
 #     def get_userinfo(self, access_token, id_token, payload):
 #         """Return user details dictionary."""
 #         return self.verify_claims(self.get_claims(access_token))
@@ -132,14 +128,14 @@ class KeycloakClient:
 #             client_secret_key=settings.OIDC_CLIENT_SECRET,
 #             verify=True
 #         )
-    
+
 #     def get_auth_url(self, redirect_uri):
 #         return self.client.auth_url(
 #             redirect_uri=redirect_uri,
 #             scope='openid email profile',
 #             state='your_state_param'  
 #         )
-    
+
 #     def get_tokens(self, code, redirect_uri):
 #         return self.client.token(
 #             grant_type='authorization_code',
