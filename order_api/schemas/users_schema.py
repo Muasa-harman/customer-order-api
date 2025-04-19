@@ -131,7 +131,7 @@ class RefreshToken(graphene.Mutation):
             )
 
 
-class Query(graphene.ObjectType):
+class AuthQuery(graphene.ObjectType):
     user_info = graphene.Field(UserInfoType)
 
     def resolve_user_info(self, info):
@@ -167,9 +167,9 @@ class Query(graphene.ObjectType):
             raise GraphQLError(f'Failed to get user info: {str(e)}')
 
 
-class Mutation(graphene.ObjectType):
+class AuthMutation(graphene.ObjectType):
     login = Login.Field()
     refresh_token = RefreshToken.Field()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation)
+schema = graphene.Schema(query=AuthQuery, mutation=AuthMutation)
