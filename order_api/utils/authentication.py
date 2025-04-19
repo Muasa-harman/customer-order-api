@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ObjectDoesNotExist
 
-from order_api.models import CustomUser
+from order_api.models import Customer
 from order_api.utils.utils import decode_jwt
 
 
@@ -16,7 +16,7 @@ class JWTAuthMiddleware:
 
                 payload = decode_jwt(token)
 
-                user = CustomUser.objects.get(oidc_id=payload['sub'])
+                user = Customer.objects.get(oidc_id=payload['sub'])
                 request.user = user
             except ObjectDoesNotExist as e:
                 request.user = AnonymousUser()
