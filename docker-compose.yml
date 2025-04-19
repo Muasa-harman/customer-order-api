@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: donfiles.online
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0.1
+    image: quay.io/keycloak/keycloak:26.0.1   
     container_name: keycloak
     command: start-dev
     environment:

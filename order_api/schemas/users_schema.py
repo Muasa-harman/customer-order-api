@@ -44,81 +44,6 @@ class RegisterUser(graphene.Mutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    # @classmethod
-    # def mutate(cls, root, info, input):
-    #     try:
-    #         # Phone validation
-    #         phone = PhoneNumber.from_string(input.phone)
-    #         validate_international_phonenumber(phone)
-
-    #         # Check existing users
-    #         if CustomUser.objects.filter(email=input.email).exists():
-    #             raise ValidationError("Email already registered")
-    #         if CustomUser.objects.filter(phone=phone).exists():
-    #             raise ValidationError("Phone number already registered")
-
-    #         # Initialize Keycloak Admin with proper configuration
-    #         keycloak_admin = KeycloakAdmin(
-    #             server_url=os.getenv('KEYCLOAK_SERVER_URL'),
-    #             username=os.getenv('KEYCLOAK_ADMIN_USER'),
-    #             password=os.getenv('KEYCLOAK_ADMIN_PASSWORD'),
-    #             realm_name=os.getenv('KEYCLOAK_REALM'),
-    #             client_id=os.getenv('OIDC_CLIENT_ID'),
-    #             client_secret_key=os.getenv('OIDC_CLIENT_SECRET'),
-    #             verify=True,
-    #             # auto_refresh_token=['get', 'post', 'put', 'delete']
-    #         )
-            
-    #         if keycloak_admin.get_users({"email": input.email}):
-    #            raise ValidationError("Email exists in Keycloak")
-          
-    #         # Create Keycloak user
-    #         user_id = keycloak_admin.create_user({
-    #             "email": input.email,
-    #             "username": input.email,
-    #             "enabled": True,
-    #             "credentials": [{
-    #                 "type": "password",
-    #                 "value": input.password,
-    #                 "temporary": False
-    #             }],
-    #             "attributes": {"phone": str(phone)}
-    #         })
-
-            
-
-    #         # Create local user
-    #         user = CustomUser.objects.create_user(
-    #             email=input.email,
-    #             password=None,
-    #             phone=phone,
-    #             oidc_id=user_id
-    #         )
-    #         user.set_unusable_password()
-    #         user.save()
-
-    #         return RegisterUser(
-    #             success=True,
-    #             message="User registered successfully",
-    #             user=user,
-    #             errors=[]
-    #         )
-        
-    #     except ValidationError as e:
-    #         return RegisterUser(
-    #             success=False,
-    #             message="Validation error",
-    #             user=None,
-    #             errors=e.messages
-    #         )
-    #     except Exception as e:
-    #         traceback.print_exc()
-    #         return RegisterUser(
-    #             success=False,
-    #             message=str(e),
-    #             user=None,
-    #             errors=["Registration failed"]
-    #         )
     @staticmethod
     def mutate(root, info, input):
         try:
@@ -147,13 +72,14 @@ class RegisterUser(graphene.Mutation):
 
             # Decode token
             decoded_token = keycloak_openid.decode_token(access_token)
+            roles = decoded_token.get('realm_access', {}).get('roles', [])
             print("Decoded token:", decoded_token)
 
             # Validate user info
             if not user_info.get('email'):
                 raise graphene.GraphQLError("Email is missing in Keycloak user info.")
 
-            # Create or update local user
+    
             user, _ = CustomUser.objects.update_or_create(
                 oidc_id=user_info['sub'],
                 defaults={
@@ -192,7 +118,7 @@ class LoginResult(graphene.ObjectType):
 class UserType(DjangoObjectType):
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'phone', 'roles', 'oidc_id')
+        fields = ( 'email', 'phone', 'roles', 'oidc_id')
 
 class Login(graphene.Mutation):
     class Arguments:
@@ -203,7 +129,6 @@ class Login(graphene.Mutation):
     @staticmethod
     def mutate(root, info, input):
         try:
-            # Initialize Keycloak client
             keycloak_openid = KeycloakOpenID(
                 server_url=os.getenv('KEYCLOAK_SERVER_URL'),
                 realm_name=os.getenv('KEYCLOAK_REALM'),
@@ -217,6 +142,7 @@ class Login(graphene.Mutation):
                 username=input.username,
                 password=input.password,
             )
+            print('token response',token_response)
 
             if 'error' in token_response:
                 raise GraphQLError(f"Keycloak error: {token_response['error_description']}")  # Corrected
@@ -226,19 +152,20 @@ class Login(graphene.Mutation):
 
             # Fetch user info from Keycloak
             user_info = keycloak_openid.userinfo(access_token)
-
-            # Sync user with local database
+            print(user_info)
+            
             user, _ = CustomUser.objects.update_or_create(
                 oidc_id=user_info['sub'],
-                defaults={
+                defaults={  
                     'email': user_info.get('email'),
                     'phone': user_info.get('phone', ''),
                     'roles': user_info.get('realm_access', {}).get('roles', [])
                 }
             )
-
+           
             # Generate local JWT token
             payload = jwt_payload_handler(user)
+            print('payload',payload)
             local_token = jwt_encode_handler(payload)
 
             return LoginResult(

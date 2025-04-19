@@ -101,6 +101,16 @@ class OrderInput(graphene.InputObjectType):
 #                 message="An error occurred.",
 #                 errors=[str(e)]
 #             )
+
+
+import requests
+from jose import jwt
+from graphql import GraphQLError
+from django.core.exceptions import ValidationError
+from order_api.models import Customer, Order
+import graphene
+import os
+
 class CreateOrder(graphene.Mutation):
     class Arguments:
         input = OrderInput(required=True)
@@ -113,32 +123,34 @@ class CreateOrder(graphene.Mutation):
     @classmethod
     def mutate(cls, root, info, input):
         try:
-            # Extract token from headers
+            # Extract token from Authorization header
             auth_header = info.context.headers.get('Authorization')
             if not auth_header or not auth_header.startswith('Bearer '):
                 raise GraphQLError("Authorization token is missing or invalid.")
 
             token = auth_header.split(' ')[1]
 
-            # Validate the token
-            try:
-                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            except jwt.ExpiredSignatureError:
-                raise GraphQLError("Token has expired.")
-            except jwt.InvalidTokenError:
-                raise GraphQLError("Invalid token.")
+            # Fetch Keycloak public key dynamically
+            realm_url = f"{os.getenv('KEYCLOAK_SERVER_URL')}/realms/{os.getenv('KEYCLOAK_REALM')}"
+            certs_url = f"{realm_url}/protocol/openid-connect/certs"
+            certs_response = requests.get(certs_url)
+            certs_response.raise_for_status()
+            jwks = certs_response.json()
 
-            # Extract user information from the token
-            user_id = decoded_token.get('user_id')
+            # Decode & verify the token using jose.jwt
+            decoded_token = jwt.decode(
+                token,
+                jwks,
+                algorithms=['RS256'],
+                audience=os.getenv('OIDC_CLIENT_ID'),
+                issuer=f"{realm_url}"
+            )
+
             email = decoded_token.get('email')
-            roles = decoded_token.get('roles', [])
+            roles = decoded_token.get('realm_access', {}).get('roles', [])
 
-            if not user_id or not email:
-                raise GraphQLError("Invalid token payload: user_id or email is missing.")
-
-            # # Check user roles or permissions
-            # if 'customer' not in roles and 'admin' not in roles:
-            #     raise GraphQLError("You do not have permission to create an order.")
+            if not email:
+                raise GraphQLError("Email is missing in token.")
 
             # Ensure the customer exists
             try:
@@ -181,12 +193,101 @@ class CreateOrder(graphene.Mutation):
                 errors=e.messages
             )
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return CreateOrder(
                 order=None,
                 success=False,
                 message="An error occurred.",
                 errors=[str(e)]
             )
+
+# class CreateOrder(graphene.Mutation):
+#     class Arguments:
+#         input = OrderInput(required=True)
+
+#     order = graphene.Field(OrderType)
+#     success = graphene.Boolean()
+#     message = graphene.String()
+#     errors = graphene.List(graphene.String)
+
+#     @classmethod
+#     def mutate(cls, root, info, input):
+#         try:
+#             # Extract token from headers
+#             auth_header = info.context.headers.get('Authorization')
+#             if not auth_header or not auth_header.startswith('Bearer '):
+#                 raise GraphQLError("Authorization token is missing or invalid.")
+
+#             token = auth_header.split(' ')[1]
+
+#             # Validate the token
+#             try:
+#                 decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#             except jwt.ExpiredSignatureError:
+#                 raise GraphQLError("Token has expired.")
+#             except jwt.InvalidTokenError:
+#                 raise GraphQLError("Invalid token.")
+
+#             # Extract user information from the token
+#             user_id = decoded_token.get('user_id')
+#             email = decoded_token.get('email')
+#             roles = decoded_token.get('roles', [])
+
+#             if not user_id or not email:
+#                 raise GraphQLError("Invalid token payload: user_id or email is missing.")
+
+#             # # Check user roles or permissions
+#             # if 'customer' not in roles and 'admin' not in roles:
+#             #     raise GraphQLError("You do not have permission to create an order.")
+
+#             # Ensure the customer exists
+#             try:
+#                 customer = Customer.objects.get(email=email)
+#             except Customer.DoesNotExist:
+#                 raise GraphQLError("Customer associated with this token does not exist.")
+
+#             # Validate order input
+#             if input.quantity < 1:
+#                 raise ValidationError('Quantity must be at least 1.')
+
+#             if not input.item.strip():
+#                 raise ValidationError("Item cannot be empty.")
+
+#             if input.unit_price <= 0:
+#                 raise ValidationError("Price must be greater than 0.")
+
+#             # Create the order
+#             order = Order(
+#                 customer=customer,
+#                 item=input.item,
+#                 quantity=input.quantity,
+#                 unit_price=input.unit_price
+#             )
+#             order.full_clean()
+#             order.save()
+
+#             return CreateOrder(
+#                 order=order,
+#                 success=True,
+#                 message="Order created successfully!",
+#                 errors=[]
+#             )
+
+#         except ValidationError as e:
+#             return CreateOrder(
+#                 order=None,
+#                 success=False,
+#                 message="Validation failed.",
+#                 errors=e.messages
+#             )
+#         except Exception as e:
+#             return CreateOrder(
+#                 order=None,
+#                 success=False,
+#                 message="An error occurred.",
+#                 errors=[str(e)]
+#             )
 
 # class ConfirmOrder(graphene.Mutation):
 #     class Arguments:
@@ -225,6 +326,13 @@ class CreateOrder(graphene.Mutation):
 #     def send_confirmation_email(order):
 #         # email/sms notification logic here
 #         print(f"Order {order.id} confirmed! Notification sent to {order.customer.email}")
+import os
+import requests
+from jose import jwt
+from graphql import GraphQLError
+from order_api.models import Order 
+import graphene
+
 class ConfirmOrder(graphene.Mutation):
     class Arguments:
         order_id = graphene.ID(required=True)
@@ -246,22 +354,23 @@ class ConfirmOrder(graphene.Mutation):
 
             token = auth_header.split(' ')[1]
 
-            # Validate the token
-            try:
-                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            except jwt.ExpiredSignatureError:
-                raise GraphQLError("Token has expired.")
-            except jwt.InvalidTokenError:
-                raise GraphQLError("Invalid token.")
+            # Fetch Keycloak public keys (JWKS)
+            realm_url = f"{os.getenv('KEYCLOAK_SERVER_URL')}/realms/{os.getenv('KEYCLOAK_REALM')}"
+            certs_url = f"{realm_url}/protocol/openid-connect/certs"
+            jwks = requests.get(certs_url).json()
 
-            # Extract user information from the token
-            user_id = decoded_token.get('user_id')
-            roles = decoded_token.get('roles', [])
+            # Decode & verify the token
+            decoded_token = jwt.decode(
+                token,
+                jwks,
+                algorithms=["RS256"],
+                audience=os.getenv('OIDC_CLIENT_ID'),
+                issuer=realm_url
+            )
 
-            if not user_id:
-                raise GraphQLError("Invalid token payload: user_id is missing.")
+            roles = decoded_token.get('realm_access', {}).get('roles', [])
 
-            # Check user roles or permissions
+            # Check if user has 'admin' role
             if 'admin' not in roles:
                 raise GraphQLError("You do not have permission to confirm an order.")
 
@@ -275,7 +384,7 @@ class ConfirmOrder(graphene.Mutation):
             order.status = 'confirmed'
             order.save()
 
-            # Call static method for notification
+            # Send confirmation (email/sms)
             cls.send_confirmation_email(order)
 
             return ConfirmOrder(
@@ -284,7 +393,10 @@ class ConfirmOrder(graphene.Mutation):
                 message="Order confirmed!",
                 errors=[]
             )
+
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return ConfirmOrder(
                 order=None,
                 success=False,
@@ -294,7 +406,7 @@ class ConfirmOrder(graphene.Mutation):
 
     @staticmethod
     def send_confirmation_email(order):
-        # email/sms notification logic here
+        # Placeholder for actual email/SMS logic
         print(f"Order {order.id} confirmed! Notification sent to {order.customer.email}")
 
 

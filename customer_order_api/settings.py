@@ -48,13 +48,13 @@ INSTALLED_APPS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'mozilla_django_oidc.auth.OIDCAuthenticationBackend', 
+    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
     # update
     'graphql_jwt.backends.JSONWebTokenBackend',
     # 'users.backends.OIDCAuthenticationBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-    'oidc_auth.auth.OIDCAuthenticationBackend',
+    # 'oidc_auth.auth.OIDCAuthenticationBackend',
 ]
 OIDC_RP_CLIENT_ID = os.getenv('OIDC_CLIENT_ID')
 OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_CLIENT_SECRET')
