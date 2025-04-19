@@ -8,9 +8,6 @@ class UserInfoType(graphene.ObjectType):
     email = graphene.String()
     phone = graphene.String()
     roles = graphene.List(graphene.String)
-    sub = graphene.String()
-    given_name = graphene.String()
-    family_name = graphene.String()
 
 
 class LoginInput(graphene.InputObjectType):
@@ -24,6 +21,7 @@ class LoginResult(graphene.ObjectType):
     user_info = graphene.Field(UserInfoType)
     success = graphene.Boolean()
     message = graphene.String()
+    
 
 
 class Login(graphene.Mutation):
@@ -48,6 +46,7 @@ class Login(graphene.Mutation):
                 username=input.username,
                 password=input.password
             )
+            print(f"token_response: {keycloak_client}")
 
             if 'error' in token_response:
                 raise GraphQLError(f"Authentication failed: {token_response.get('error_description')}")
@@ -59,6 +58,7 @@ class Login(graphene.Mutation):
             user_info = keycloak_client.userinfo(access_token)
             decoded_token = keycloak_client.decode_token(access_token)
             roles = decoded_token.get('realm_access', {}).get('roles', [])
+            print(f"user info: {user_info}")
 
             return LoginResult(
                 success=True,
@@ -68,12 +68,10 @@ class Login(graphene.Mutation):
                 user_info=UserInfoType(
                     email=user_info.get('email'),
                     phone=user_info.get('phone_number'),
-                    roles=roles,
-                    sub=user_info.get('sub'),
-                    given_name=user_info.get('given_name'),
-                    family_name=user_info.get('family_name')
+                    roles=roles
                 )
             )
+            
 
         except Exception as e:
             return LoginResult(
@@ -172,4 +170,4 @@ class AuthMutation(graphene.ObjectType):
     refresh_token = RefreshToken.Field()
 
 
-schema = graphene.Schema(query=AuthQuery, mutation=AuthMutation)
+schema = graphene.Schema(query=AuthQuery, mutation=AuthMutation,auto_camelcase=False)

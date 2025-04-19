@@ -112,12 +112,14 @@ LOGIN_REDIRECT_URL = '/admin/'
 
 # GraphQL 
 GRAPHENE = {
-    'SCHEMA': 'customer_order_api.schema.schema',
+    'SCHEMA': 'customer_order_api.schema.users_schema.schema',  # Path to your GraphQL schema
     'MIDDLEWARE': [
         "order_api.utils.authentication.JWTAuthMiddleware",
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }
+
+
 
 AUTHENTICATION_CLASSES = [
     'oidc_auth.authentication.JSONWebTokenAuthentication',
@@ -205,8 +207,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Optional: For project-wide static files
