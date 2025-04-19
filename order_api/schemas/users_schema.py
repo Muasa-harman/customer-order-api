@@ -67,7 +67,7 @@ class Login(graphene.Mutation):
                 refresh_token=refresh_token,
                 user_info=UserInfoType(
                     email=user_info.get('email'),
-                    phone=user_info.get('phone_number'),
+                    phone=user_info.get('phoneNumber'),
                     roles=roles
                 )
             )
@@ -149,6 +149,7 @@ class AuthQuery(graphene.ObjectType):
 
             # Verify token and get user info
             user_info = keycloak_client.userinfo(token)
+            print(f"user info: {token}")
             decoded_token = keycloak_client.decode_token(token)
             roles = decoded_token.get('realm_access', {}).get('roles', [])
 
