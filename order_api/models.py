@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
@@ -36,7 +37,11 @@ class CustomerManager(BaseUserManager):
 
 
 class Orders(models.Model):
-    # id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
     customer_id = models.UUIDField()
     total_price = models.FloatField(blank=True, null=True)
     status = models.CharField(max_length=20)

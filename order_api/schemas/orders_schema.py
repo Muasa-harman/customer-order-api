@@ -1,3 +1,4 @@
+import uuid
 import graphene
 from graphql import GraphQLError
 from datetime import datetime as Datetime
@@ -81,7 +82,7 @@ class CreateOrder(graphene.Mutation):
 
 class ConfirmOrder(graphene.Mutation):
     class Arguments:
-        order_id = graphene.ID(required=True)
+           order_id = graphene.String(required=True)
 
     order = graphene.Field(OrderType)
     success = graphene.Boolean()
@@ -91,11 +92,19 @@ class ConfirmOrder(graphene.Mutation):
     @staticmethod
     def mutate(root, info, order_id):
         try:
+            update_order_id = order_id.strip()
+            uuid.UUID(update_order_id, version=4)
+            try:
+                uuid.UUID(update_order_id, version=4)
+            except ValueError:
+                raise ValueError("Invalid UUID format")
+               
             auth_header = info.context.headers.get('Authorization')
             if not auth_header or not auth_header.startswith('Bearer '):
                 raise GraphQLError("Missing authorization token")
 
             user_info = load_keycloak_user_info(auth_header)
+            print(f"User info: {user_info}")
             order = Orders.objects.get(id=order_id)
 
             if order.status != 'NEW':
@@ -103,6 +112,9 @@ class ConfirmOrder(graphene.Mutation):
 
             order.status = 'CONFIRMED'
             order.save()
+
+            ConfirmOrder.send_confirmation_email(order)
+            ConfirmOrder.send_confirmation_sms(order)
 
             # Simplified notification without customer details
             print(f"Order #{order.id} has been confirmed for customer ID: {order.customer_id}")
@@ -128,11 +140,18 @@ class ConfirmOrder(graphene.Mutation):
                 message="Failed to confirm order.",
                 errors=[str(e)]
             )
+    @staticmethod
+    def send_confirmation_email( order):
+    #   email/sms notification logic here
+        print(f"Order {order.id} confirmed! Notification sent to {order.customer.email}")
+
+    @staticmethod
+    def send_confirmation_sms( order):
+    #   email/sms notification logic here
+        print(f"Order {order.id} confirmed! Notification sent to {order.customer.phone}")
 
 
-# --------------------------
-# Queries
-# --------------------------
+
 class OrderQuery(graphene.ObjectType):
     my_orders = graphene.List(
         OrderType,
@@ -157,9 +176,7 @@ class OrderQuery(graphene.ObjectType):
             raise GraphQLError(f"Failed to fetch orders: {str(e)}")
 
 
-# --------------------------
-# Schema Configuration
-# --------------------------
+
 class OrderMutation(graphene.ObjectType):
     create_order = CreateOrder.Field()
     confirm_order = ConfirmOrder.Field()
