@@ -45,4 +45,5 @@ def load_keycloak_user_info(auth_header: str) -> Dict[str, Any]:
         return complete_user_info
 
     except Exception as e:
+        print(e)
         raise GraphQLError(f'Failed to load user information: {str(e)}')

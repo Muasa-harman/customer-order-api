@@ -35,25 +35,16 @@ class CustomerManager(BaseUserManager):
         return self.create_user(email, name, code, password, **extra_fields)
 
 
-class Order(models.Model):
-    STATUS_CHOICES = [
-        ('NEW', 'new'),
-        ('PROCESSING', 'Processing'),
-        ('DELIVERED', 'delivered'),
-        ('CANCELLED', 'Cancelled'),
-    ]
-
-    customer_id = models.UUIDField(max_length=4000, null=False)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
-    order_details = models.BinaryField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.UUIDField(max_length=4000, null=False, default=customer_id)
+class Orders(models.Model):
+    # id = models.UUIDField(primary_key=True)
+    customer_id = models.UUIDField()
+    total_price = models.FloatField(blank=True, null=True)
+    status = models.CharField(max_length=20)
+    order_details = models.CharField()
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+    created_by = models.UUIDField()
 
     class Meta:
-        indexes = [
-            models.Index(fields=['status']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['customer_id', 'status']),
-        ]
+        managed = False
+        db_table = 'orders'

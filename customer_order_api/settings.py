@@ -114,7 +114,7 @@ LOGIN_REDIRECT_URL = '/admin/'
 GRAPHENE = {
     'SCHEMA': 'customer_order_api.schema.users_schema.schema',  # Path to your GraphQL schema
     'MIDDLEWARE': [
-        "order_api.utils.authentication.JWTAuthMiddleware",
+        # "order_api.utils.authentication.JWTAuthMiddleware",
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }

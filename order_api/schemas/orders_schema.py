@@ -1,7 +1,8 @@
 import graphene
 from graphql import GraphQLError
+from datetime import datetime as Datetime
 
-from order_api.models import Order
+from order_api.models import  Orders
 from order_api.utils.load_keycloak_user_info import load_keycloak_user_info
 
 
@@ -52,12 +53,14 @@ class CreateOrder(graphene.Mutation):
 
             user_info = load_keycloak_user_info(auth_header)
             if user_info is not None:
-                order = Order.objects.create(
+                order = Orders.objects.create(
                     customer_id=input.userId,
                     total_price=input.price,
                     status='NEW',
-                    order_details=input.order_details.encode() if input.order_details else b'',
-                    created_by=user_info['sub']
+                    order_details=input.order_details,
+                    created_by=user_info['sub'],
+                    created_at=Datetime.now(),
+                    updated_at=Datetime.now()
                 )
 
                 return CreateOrder(
@@ -93,7 +96,7 @@ class ConfirmOrder(graphene.Mutation):
                 raise GraphQLError("Missing authorization token")
 
             user_info = load_keycloak_user_info(auth_header)
-            order = Order.objects.get(id=order_id)
+            order = Orders.objects.get(id=order_id)
 
             if order.status != 'NEW':
                 raise GraphQLError("Only pending orders can be confirmed")
@@ -111,7 +114,7 @@ class ConfirmOrder(graphene.Mutation):
                 errors=[]
             )
 
-        except Order.DoesNotExist:
+        except Orders.DoesNotExist:
             return ConfirmOrder(
                 order=None,
                 success=False,
@@ -143,7 +146,7 @@ class OrderQuery(graphene.ObjectType):
                 raise GraphQLError("Authentication required")
 
             user_info = load_keycloak_user_info(auth_header)
-            queryset = Order.objects.filter(customer_id=user_info['sub'])
+            queryset = Orders.objects.filter(customer_id=user_info['sub'])
 
             if status:
                 queryset = queryset.filter(status=status.upper())
