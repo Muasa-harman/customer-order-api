@@ -1,9 +1,10 @@
 from jwt import decode, PyJWKClient, ExpiredSignatureError, InvalidTokenError
-import os
+
 
 def decode_jwt(token):
     try:
-        jwks_url = os.getenv("OIDC_JWKS_URL")  # e.g., http://localhost:8080/realms/myrealm/protocol/openid-connect/certs
+        jwks_url = os.getenv(
+            "OIDC_JWKS_URL")  # e.g., http://localhost:8080/realms/myrealm/protocol/openid-connect/certs
         audience = os.getenv("OIDC_CLIENT_ID")
         issuer = os.getenv("OIDC_ISSUER")
 
@@ -24,16 +25,14 @@ def decode_jwt(token):
         raise ValueError(f"Invalid JWT token: {str(e)}")
 
 
-
-
-
-
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 from django.conf import settings
 
+
 def get_jwt_secret():
     return settings.SECRET_KEY
+
 
 def jwt_payload_handler(user, context=None):
     return {
@@ -44,7 +43,6 @@ def jwt_payload_handler(user, context=None):
         'iss': os.getenv('OIDC_ISSUER'),
         'aud': os.getenv('OIDC_CLIENT_ID')
     }
-
 
 #     class CreateOrder(graphene.Mutation):
 #     class Arguments:
@@ -171,4 +169,4 @@ def jwt_payload_handler(user, context=None):
 #     except jwt.JWTClaimsError:
 #      raise ValueError("Invalid claims in token.")
 #     except JWTError:
-#      raise ValueError("Invalid JWT token.")  token 
+#      raise ValueError("Invalid JWT token.")  token
