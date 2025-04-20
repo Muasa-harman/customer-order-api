@@ -112,11 +112,12 @@ LOGIN_REDIRECT_URL = '/admin/'
 
 # GraphQL 
 GRAPHENE = {
-    'SCHEMA': 'customer_order_api.schema.users_schema.schema',  # Path to your GraphQL schema
+    'SCHEMA': 'customer_order_api.schema.users_schema.schema', 
     'MIDDLEWARE': [
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
 }
+
 
 
 
@@ -168,8 +169,13 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('POSTGRES_HOST', default='localhost'),
         'PORT': os.getenv('POSTGRES_PORT', default='5432'),
+        'TEST': {
+            'NAME': 'customer_order_service', 
+        },
     }
 }
+DATABASES['default']['CONN_MAX_AGE'] = 0
+DATABASES['default']['TEST']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

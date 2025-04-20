@@ -40,8 +40,6 @@ class Login(graphene.Mutation):
                 client_id=os.getenv('OIDC_CLIENT_ID'),
                 client_secret_key=os.getenv('OIDC_CLIENT_SECRET')
             )
-
-            # Get token from Keycloak
             token_response = keycloak_client.token(
                 grant_type='password',
                 username=input.username,
@@ -55,7 +53,6 @@ class Login(graphene.Mutation):
             access_token = token_response['access_token']
             refresh_token = token_response['refresh_token']
 
-            # Get user info from Keycloak
             user_info = keycloak_client.userinfo(access_token)
             print('user',user_info)
             decoded_token = keycloak_client.decode_token(access_token)
@@ -74,7 +71,7 @@ class Login(graphene.Mutation):
                 )
                 
             )
-            # phoneNumber
+
 
         except Exception as e:
             return LoginResult(

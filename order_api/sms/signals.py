@@ -38,10 +38,10 @@ sms_service = SMSService()
 
 @receiver(post_save, sender=Orders)
 def order_created_handler(sender, instance, created, **kwargs):
-    if instance.status == 'confirmed' and instance.customer.phone:
-        sms_service.send_order_confirmation(
-                phone_number=str(instance.customer.phone),
-                customer_name=instance.customer.name,
+    if instance.status == 'confirmed' and instance.phone_number:
+        sms_service.send_order_sms(
+                phone=instance.phone_number,
+                customer_name=instance.name,
                 order_details={
                     'item': instance.item,
                     'amount': instance.amount
