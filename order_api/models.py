@@ -126,61 +126,24 @@ class Customer(AbstractBaseUser, PermissionsMixin):
 
 
 class Order(models.Model):
-    STATUS_DRAFT = 'draft'
-    STATUS_CONFIRMED = 'confirmed'
     STATUS_CHOICES = [
-        (STATUS_DRAFT, 'Draft'),
-        (STATUS_CONFIRMED, 'Confirmed'),
+        ('NEW', 'new'),
+        ('PROCESSING', 'Processing'),
+        ('DELIVERED', 'delivered'),
+        ('CANCELLED', 'Cancelled'),
     ]
 
-    customer = models.ForeignKey(
-        Customer,
-        on_delete=models.CASCADE,
-        related_name='orders'
-    )
-    created_by = models.ForeignKey(
-        Customer,  # Changed from 'CustomUser' to Customer
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='created_orders'
-    )
-    item = models.CharField(
-        max_length=100,
-        validators=[RegexValidator(r'^[a-zA-Z0-9 ]+$', 'Only alphanumeric characters allowed')]
-    )
-    unit_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0.01)]
-    )
-    quantity = models.PositiveIntegerField(
-        default=1,
-        validators=[MinValueValidator(1)]
-    )
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        editable=False
-    )
-    time = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default=STATUS_DRAFT
-    )
+    customer_id= models.UUIDField( max_length=4000,null=False)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
+    order_details = models.BinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by=models.UUIDField( max_length=4000,null=False,default=customer_id)
 
     class Meta:
-        ordering = ['-time']
         indexes = [
             models.Index(fields=['status']),
-            models.Index(fields=['-time']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['customer', 'status']),
         ]
-        verbose_name = "Order"
-        verbose_name_plural = "Orders"
-
-    def save(self, *args, **kwargs):
-        self.amount = self.unit_price * self.quantity
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Order #{self.id} - {self.item} ({self.status})"

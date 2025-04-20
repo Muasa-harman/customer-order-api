@@ -6,7 +6,8 @@ from graphql import GraphQLError
 
 class UserInfoType(graphene.ObjectType):
     email = graphene.String()
-    phone = graphene.String()
+    fullName = graphene.String()
+    userId = graphene.String()
     roles = graphene.List(graphene.String)
 
 
@@ -56,9 +57,9 @@ class Login(graphene.Mutation):
 
             # Get user info from Keycloak
             user_info = keycloak_client.userinfo(access_token)
+            print('user',user_info)
             decoded_token = keycloak_client.decode_token(access_token)
             roles = decoded_token.get('realm_access', {}).get('roles', [])
-            print(f"user info: {user_info}")
 
             return LoginResult(
                 success=True,
@@ -67,11 +68,13 @@ class Login(graphene.Mutation):
                 refresh_token=refresh_token,
                 user_info=UserInfoType(
                     email=user_info.get('email'),
-                    phone=user_info.get('phoneNumber'),
+                    fullName=user_info.get('name'),
+                    userId=user_info.get('sub'),
                     roles=roles
                 )
+                
             )
-            
+            # phoneNumber
 
         except Exception as e:
             return LoginResult(
@@ -101,7 +104,7 @@ class RefreshToken(graphene.Mutation):
     Output = RefreshTokenResult
 
     @staticmethod
-    def mutate(input):
+    def mutate(root, info, input):
         try:
             keycloak_client = KeycloakOpenID(
                 server_url=os.getenv('KEYCLOAK_SERVER_URL'),
