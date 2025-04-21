@@ -1,8 +1,10 @@
+import json
 import os
 import africastalking
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from order_api.models import  Orders
+import json
 
 
 class SMSService:
@@ -31,20 +33,36 @@ class SMSService:
         except Exception as e:
             print(f"SMS sending failed: {str(e)}")
             return False
+   
 
+    
 
 sms_service = SMSService()
 
-
 @receiver(post_save, sender=Orders)
 def order_created_handler(sender, instance, created, **kwargs):
-    if instance.status == 'confirmed' and instance.phone_number:
+    if instance.status.lower() == 'confirmed' and instance.order_details:
+        details = parse_order_details(instance.order_details)
         sms_service.send_order_sms(
-                phone=instance.phone_number,
-                customer_name=instance.name,
-                order_details={
-                    'item': instance.item,
-                    'amount': instance.amount
-                }
-            )
+            phone=details.get('phone_number', ''),
+            message=f"Hi {details.get('name')}, your order has been confirmed!\n"
+                    f"Items: {details.get('item')}\n"
+                    f"Total: KES {details.get('amount')}\n"
+                    f"Thank you for choosing {os.getenv('COMPANY_NAME', 'Our Store')}!",
+            user_info=details.get('name', ''),
+            order_details=details
+        )
+
+
+# @receiver(post_save, sender=Orders)
+# def order_created_handler(sender, instance, created, **kwargs):
+#     if instance.status == 'confirmed' and instance.phone_number:
+#         sms_service.send_order_sms(
+#                 phone=instance.phone_number,
+#                 customer_name=instance.name,
+#                 order_details={
+#                     'item': instance.item,
+#                     'amount': instance.amount
+#                 }
+#             )
       

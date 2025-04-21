@@ -60,21 +60,7 @@ KEYCLOAK_SERVER_URL = os.getenv('KEYCLOAK_SERVER_URL')
 OIDC_RP_REALM_NAME = os.getenv('KEYCLOAK_REALM')
 OIDC_VERIFY_SSL = True
 
-SOCIALACCOUNT_PROVIDERS = {
-    'openid_connect': {
-        'APPS': [
-            {
-                'provider_id': 'keycloak',
-                'name': 'Keycloak',
-                'client_id': 'OIDC_CLIENT_ID',
-                'secret': 'OIDC_CLIENT_SECRET',
-                'settings': {
-                    'server_url': 'OIDC_ENDPOINT',
-                },
-            }
-        ]
-    }
-}
+
 
 OIDC_ENDPOINT = "http://localhost:8080/realms/donfiles/broker/keycloak-oidc/endpoint"
 OIDC_CLIENT_ID = os.getenv('OIDC_CLIENT_ID')
@@ -160,28 +146,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'customer_order_api.wsgi.application'
 
 # Database
-import dj_database_url
-import os
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL') 
-    )
-}
+# import dj_database_url
+# import os
 
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB'),
-#         'USER': os.getenv('POSTGRES_USER'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-#         'HOST': os.getenv('POSTGRES_HOST', default='localhost'),
-#         'PORT': os.getenv('POSTGRES_PORT', default='5432'),
-#         'TEST': {
-#             'NAME': 'customer_order_service', 
-#         },
-#     }
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL') 
+#     )
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST', default='localhost'),
+        'PORT': os.getenv('POSTGRES_PORT', default='5432'),
+        'TEST': {
+            'NAME': 'customer_order_service', 
+        },
+    }
+}
 DATABASES['default']['CONN_MAX_AGE'] = 0
 DATABASES['default']['TEST']['DISABLE_SERVER_SIDE_CURSORS'] = True
 

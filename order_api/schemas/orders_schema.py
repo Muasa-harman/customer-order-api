@@ -111,9 +111,10 @@ class ConfirmOrder(graphene.Mutation):
 
             order.status = 'CONFIRMED'
             order.save()
-
+            
+            order_data = parse_order_details(order.order_details)
             # ConfirmOrder.send_confirmation_email(order)
-            ConfirmOrder.send_confirmation_sms(order)
+            ConfirmOrder.send_confirmation_sms(order,user_info, order_data)
 
             # Simplified notification without customer details
             print(f"Order #{order.id} has been confirmed for customer ID: {order.customer_id}")
@@ -144,10 +145,10 @@ class ConfirmOrder(graphene.Mutation):
     # #   email/sms notification logic here
         # print(f"Order {order.id} confirmed! Notification sent to {user_info.o}")
 
-    # @staticmethod
-    # def send_confirmation_sms( order):
-    # # #   email/sms notification logic here
-    #     print(f"Order {order.id} confirmed! Notification sent to {order.order_details.phone_number}")
+    @staticmethod
+    def send_confirmation_sms( order):
+    # #   email/sms notification logic here
+        print(f"Order {order.id} confirmed! Notification sent to {order.order_details.phone_number}")
 
 
 

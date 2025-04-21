@@ -4,21 +4,21 @@
 # version: '3.9'
 
 # services:
-#   web:
-#     build: .
-#     container_name: customer-order-api
-#     command: python manage.py runserver 0.0.0.0:8000
-#     volumes:
-#       - ./customer_order_api:/app
-#     ports:
-#       - "8000:8000"
-#     env_file:
-#       - .env
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#       keycloak:
-#         condition: service_healthy
+#   # web:
+#   #   build: .
+#   #   container_name: customer-order-api
+#   #   command: python manage.py runserver 0.0.0.0:8000
+#   #   volumes:
+#   #     - ./customer_order_api:/app
+#   #   ports:
+#   #     - "8000:8000"
+#   #   env_file:
+#   #     - .env
+#   #   depends_on:
+#   #     db:
+#   #       condition: service_healthy
+#   #     keycloak:
+#   #       condition: service_healthy
 
 #   db:
 #     image: postgres:14
@@ -55,18 +55,112 @@
 #     depends_on:
 #       - db
 
-# volumes:
-#   postgres_data:
+#   volumes:
+#     postgres_data:
 
 
 
 
 
 # services:
+#   web:
+#     build: .
+#     container_name: customer-order-api
+#     command: python manage.py runserver 0.0.0.0:8000
+#     volumes:
+#       - .:/app
+#     ports:
+#       - "8000:8000"
+#     env_file:
+#       - .env
+#     depends_on:
+#       - db
+#     environment:
+#       DB_NAME: customer-order-service
+#       DB_USER: postgres
+#       DB_PASSWORD: donfiles.online
+#       DB_HOST: db
+#       DB_PORT: 5432
+#   db:
+#       image: postgres:14
+#       volumes:
+#         - postgres_data:/var/lib/postgresql/data/
+#       environment:
+#         POSTGRES_DB: customer-order-service
+#         POSTGRES_USER: postgres
+#         POSTGRES_PASSWORD: donfiles.online
+
+#   keycloak:
+#       image: quay.io/keycloak/keycloak:26.0.1   
+#       container_name: keycloak
+#       command: start-dev
+#       environment:
+#         KC_DB: postgres
+#         KC_DB_URL_HOST: db
+#         KC_DB_URL_DATABASE: postgres
+#         KC_DB_USERNAME: postgres
+#         KC_DB_PASSWORD: donfiles.online
+#         KEYCLOAK_ADMIN: admin
+#         KEYCLOAK_ADMIN_PASSWORD: admin
+#       ports:
+#         - "8080:8080"
+#       depends_on:
+#         - db
+
+
+#   volumes:
+#     postgres_data:
+
+services:
+  # web:
+  #   build: .
+  #   container_name: customer-order-api
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "8000:8000"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: customer-order-service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: donfiles.online
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.1   
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: db
+      KC_DB_URL_DATABASE: postgres
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: donfiles.online
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+volumes:
+  postgres_data:
+
+
+# services:
 #  web:
 #    build: .
-#    container_name: customer-order-api
-#    command: python manage.py runserver 0.0.0.0:8000
+#    command: python api/manage.py runserver 0.0.0.0:8000
 #    volumes:
 #      - .:/app
 #    ports:
@@ -75,38 +169,33 @@
 #      - .env
 #    depends_on:
 #      - db
-#    environment:
-#      DB_NAME: customer-order-service
-#      DB_USER: postgres
-#      DB_PASSWORD: donfiles.online
-#      DB_HOST: db
-#      DB_PORT: 5432
-#   db:
-#     image: postgres:14
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data/
-#     environment:
-#       POSTGRES_DB: customer-order-service
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: donfiles.online
-
-#   keycloak:
-#     image: quay.io/keycloak/keycloak:26.0.1   
-#     container_name: keycloak
-#     command: start-dev
-#     environment:
-#       KC_DB: postgres
-#       KC_DB_URL_HOST: db
-#       KC_DB_URL_DATABASE: postgres
-#       KC_DB_USERNAME: postgres
-#       KC_DB_PASSWORD: donfiles.online
-#       KEYCLOAK_ADMIN: admin
-#       KEYCLOAK_ADMIN_PASSWORD: admin
-#     ports:
-#       - "8080:8080"
-#     depends_on:
-#       - db
 
 
-# volumes:
-#   postgres_data:
+
+  # db:
+  #   image: postgres:14
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   environment:
+  #     POSTGRES_DB: customer-order-service
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: donfiles.online
+
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:26.0.1   
+  #   container_name: keycloak
+  #   command: start-dev
+  #   environment:
+  #     KC_DB: postgres
+  #     KC_DB_URL_HOST: db
+  #     KC_DB_URL_DATABASE: postgres
+  #     KC_DB_USERNAME: postgres
+  #     KC_DB_PASSWORD: donfiles.online
+  #     KEYCLOAK_ADMIN: admin
+  #     KEYCLOAK_ADMIN_PASSWORD: admin
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     postgres_data:
