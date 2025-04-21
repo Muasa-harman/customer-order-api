@@ -6,6 +6,8 @@ from django.dispatch import receiver
 from order_api.models import  Orders
 import json
 
+from order_api.utils.order_helpers import parse_order_details
+
 
 class SMSService:
     def __init__(self):
@@ -43,26 +45,18 @@ sms_service = SMSService()
 def order_created_handler(sender, instance, created, **kwargs):
     if instance.status.lower() == 'confirmed' and instance.order_details:
         details = parse_order_details(instance.order_details)
+        user_info = instance.fullName
+        print('user information',user_info)
         sms_service.send_order_sms(
             phone=details.get('phone_number', ''),
             message=f"Hi {details.get('name')}, your order has been confirmed!\n"
                     f"Items: {details.get('item')}\n"
                     f"Total: KES {details.get('amount')}\n"
-                    f"Thank you for choosing {os.getenv('COMPANY_NAME', 'Our Store')}!",
-            user_info=details.get('name', ''),
+                    f"Thank you for choosing {os.getenv('COMPANY_NAME', 'Our Store')}!",  
+            user_info=user_info,
             order_details=details
         )
+     
+     
 
 
-# @receiver(post_save, sender=Orders)
-# def order_created_handler(sender, instance, created, **kwargs):
-#     if instance.status == 'confirmed' and instance.phone_number:
-#         sms_service.send_order_sms(
-#                 phone=instance.phone_number,
-#                 customer_name=instance.name,
-#                 order_details={
-#                     'item': instance.item,
-#                     'amount': instance.amount
-#                 }
-#             )
-      

@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from order_api.models import  Orders
 from order_api.utils.load_keycloak_user_info import load_keycloak_user_info
+from order_api.utils.order_helpers import parse_order_details
 
 
 class OrderItemType(graphene.ObjectType):
@@ -117,7 +118,7 @@ class ConfirmOrder(graphene.Mutation):
             ConfirmOrder.send_confirmation_sms(order,user_info, order_data)
 
             # Simplified notification without customer details
-            print(f"Order #{order.id} has been confirmed for customer ID: {order.customer_id}")
+            print(f"Order #{order.id} has been confirmed for customer ID: {order.order_details.phone_number}")
 
             return ConfirmOrder(
                 order=order,
@@ -146,9 +147,9 @@ class ConfirmOrder(graphene.Mutation):
         # print(f"Order {order.id} confirmed! Notification sent to {user_info.o}")
 
     @staticmethod
-    def send_confirmation_sms( order):
+    def send_confirmation_sms( order,user_info, order_data):
     # #   email/sms notification logic here
-        print(f"Order {order.id} confirmed! Notification sent to {order.order_details.phone_number}")
+        print(f"Order {order.id} confirmed! Notification sent to {order_data('phone_number')}")
 
 
 
