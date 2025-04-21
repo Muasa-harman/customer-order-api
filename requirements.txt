@@ -59,3 +59,4 @@ gunicorn
 psycopg2-binary
 django
 whitenoise
+dj-database-url==2.3.0

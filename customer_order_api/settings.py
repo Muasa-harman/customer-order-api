@@ -160,20 +160,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'customer_order_api.wsgi.application'
 
 # Database
+import dj_database_url
+import os
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST', default='localhost'),
-        'PORT': os.getenv('POSTGRES_PORT', default='5432'),
-        'TEST': {
-            'NAME': 'customer_order_service', 
-        },
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL') 
+    )
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB'),
+#         'USER': os.getenv('POSTGRES_USER'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+#         'HOST': os.getenv('POSTGRES_HOST', default='localhost'),
+#         'PORT': os.getenv('POSTGRES_PORT', default='5432'),
+#         'TEST': {
+#             'NAME': 'customer_order_service', 
+#         },
+#     }
+# }
 DATABASES['default']['CONN_MAX_AGE'] = 0
 DATABASES['default']['TEST']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
