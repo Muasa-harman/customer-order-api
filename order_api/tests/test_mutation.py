@@ -9,16 +9,12 @@ from customer_order_api.schema import schema
 @pytest.mark.django_db
 @patch("order_api.schemas.orders_schema.load_keycloak_user_info") 
 def test_create_order_mutation(mock_user_info):
-    # Setup mock user data
     user_id = "c0f86a71-d35a-43f0-93c0-2802f88eaf9d"
     mock_user_info.return_value = {'sub': user_id}
-
-    # Create request with authorization header
     factory = RequestFactory()
     request = factory.post('/graphql')
     request.META['HTTP_AUTHORIZATION'] = 'Bearer valid_token'
 
-    # GraphQL mutation
     mutation = '''
         mutation {
           createOrder(input: {
