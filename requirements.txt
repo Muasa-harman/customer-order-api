@@ -36,7 +36,7 @@ pluggy==1.5.0
 promise==2.3
 psycopg2-binary==2.9.10
 pycparser==2.22
-pycrypto==2.6.1
+pycryptodome
 pyjwkest==0.6.2
 PyJWT==2.10.1
 pytest==8.3.5
