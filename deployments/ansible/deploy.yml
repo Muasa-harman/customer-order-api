@@ -1,5 +1,5 @@
 ---
-- name: Deploy Django App
+- name: Deploy Customer API
   hosts: ubuntu_servers
   become: yes
   vars:
@@ -22,13 +22,13 @@
       git:
         repo: "{{ git_repo }}"
         dest: "{{ app_dir }}"
-        version: "main"  # You can change this to the desired branch, tag, or commit
-        force: yes  # Ensure repository is cloned if not already present
+        version: "main"  
+        force: yes 
 
     - name: Create virtual environment
       command: "python3.11 -m venv {{ app_dir }}/venv"
       args:
-        creates: "{{ app_dir }}/venv"  # Avoid recreating the virtual environment if it already exists
+        creates: "{{ app_dir }}/venv" 
 
     - name: Install Python packages
       pip:

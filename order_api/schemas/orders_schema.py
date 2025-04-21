@@ -1,15 +1,13 @@
+import traceback
 import uuid
 import graphene
 from graphql import GraphQLError
-from datetime import datetime as Datetime
+from django.utils import timezone 
 
 from order_api.models import  Orders
 from order_api.utils.load_keycloak_user_info import load_keycloak_user_info
 
 
-# --------------------------
-# GraphQL Types
-# --------------------------
 class OrderItemType(graphene.ObjectType):
     product_id = graphene.String()
     quantity = graphene.Int()
@@ -27,9 +25,7 @@ class OrderType(graphene.ObjectType):
     created_by = graphene.String()
 
 
-# --------------------------
-# Input Types
-# --------------------------
+
 class OrderItemInput(graphene.InputObjectType):
     order_details = graphene.String()
     price = graphene.Float(required=True)
@@ -60,8 +56,8 @@ class CreateOrder(graphene.Mutation):
                     status='NEW',
                     order_details=input.order_details,
                     created_by=user_info['sub'],
-                    created_at=Datetime.now(),
-                    updated_at=Datetime.now()
+                    created_at=timezone.now(),
+                    updated_at=timezone.now()
                 )
 
                 return CreateOrder(
@@ -72,6 +68,9 @@ class CreateOrder(graphene.Mutation):
                 )
 
         except Exception as e:
+            import  traceback
+            print("Error creating order:", e)
+            traceback.print_exc()
             return CreateOrder(
                 order=None,
                 success=False,
@@ -114,7 +113,7 @@ class ConfirmOrder(graphene.Mutation):
             order.save()
 
             # ConfirmOrder.send_confirmation_email(order)
-            # ConfirmOrder.send_confirmation_sms(order)
+            ConfirmOrder.send_confirmation_sms(order)
 
             # Simplified notification without customer details
             print(f"Order #{order.id} has been confirmed for customer ID: {order.customer_id}")
@@ -147,8 +146,8 @@ class ConfirmOrder(graphene.Mutation):
 
     # @staticmethod
     # def send_confirmation_sms( order):
-    # #   email/sms notification logic here
-    #     print(f"Order {order.id} confirmed! Notification sent to {order.customer.phone}")
+    # # #   email/sms notification logic here
+    #     print(f"Order {order.id} confirmed! Notification sent to {order.order_details.phone_number}")
 
 
 

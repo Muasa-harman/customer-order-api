@@ -1,5 +1,5 @@
 import uuid
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import  BaseUserManager
 from django.db import models
 
 
@@ -37,6 +37,11 @@ class CustomerManager(BaseUserManager):
 
 
 class Orders(models.Model):
+    STATUS_CHOICES = [
+        ('NEW', 'New'),
+        ('CONFIRMED', 'Confirmed'),
+    ]
+    
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -45,11 +50,14 @@ class Orders(models.Model):
     customer_id = models.UUIDField()
     total_price = models.FloatField(blank=True, null=True)
     status = models.CharField(max_length=20)
-    order_details = models.CharField()
-    created_at = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(blank=True, null=True)
+    order_details = models.TextField()
+    # order_details = models.CharField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     created_by = models.UUIDField()
 
     class Meta:
-        managed = False
         db_table = 'orders'
+
+    def __str__(self):
+       return f"Order {self.id}"    

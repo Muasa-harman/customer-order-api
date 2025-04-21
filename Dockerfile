@@ -15,4 +15,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . .
 
 # Run server (change this if using something like gunicorn in prod)
-CMD ["python", "api/manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "customer_order_api/manage.py", "runserver", "0.0.0.0:8000"]

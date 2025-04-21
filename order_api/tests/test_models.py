@@ -18,3 +18,4 @@ def test_order_model_creation():
 
     assert Orders.objects.count() == 1
     assert order.status == 'NEW'
+    assert str(order) == f"Order {order.id}" 
