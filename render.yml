@@ -13,20 +13,6 @@ services:
 
 
 
-# services:
-#   - type: web
-#     name: customer-order-api
-#     env: python
-#     buildCommand: "pip install -r requirements.txt"
-#     startCommand: "gunicorn customer_order_api.wsgi:application --bind 0.0.0.0:$PORT"
-#     envVars:
-#       - key: DJANGO_SETTINGS_MODULE
-#         value: customer_order_api.settings
-#       - fromDatabase:
-#           name: customer-order-db
-#           property: connectionString
-#           key: DATABASE_URL
-#           value: postgresql://donfiles_online:QAnaEutatJb6hfUivSMrP2P4lbbZnjVk@dpg-d0369b9r0fns73am5te0-a/customer_order_service
 
 
 
