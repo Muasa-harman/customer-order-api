@@ -271,21 +271,19 @@ class ConfirmOrder(graphene.Mutation):
     @staticmethod
     def mutate(root, info, order_id):
         try:
-            # Validate UUID format
+        
             try:
                 uuid.UUID(order_id.strip(), version=4)
             except ValueError:
                 raise ValueError("Invalid UUID format")
 
-            # Validate authorization
             auth_header = info.context.headers.get('Authorization')
             if not auth_header or not auth_header.startswith('Bearer '):
                 raise GraphQLError("Missing authorization token")
 
-            # Load user info from Keycloak
+        
             user_info = load_keycloak_user_info(auth_header)
 
-            # Fetch the order
             try:
                 order = Orders.objects.get(id=order_id)
             except Orders.DoesNotExist:
@@ -294,12 +292,12 @@ class ConfirmOrder(graphene.Mutation):
             if order.status != 'NEW':
                 raise GraphQLError("Only new orders can be confirmed")
 
-            # Update order status
+        
             order.status = 'CONFIRMED'
             order._user_info = user_info
             order.save()
 
-            # Trigger SMS notification
+    
             ConfirmOrder.send_confirmation_sms(order, user_info)
 
             return ConfirmOrder(
@@ -323,12 +321,11 @@ class ConfirmOrder(graphene.Mutation):
         Sends an SMS notification to the customer when the order is confirmed.
         """
         try:
-            # Extract phone number from user info
+            
             phone_number = user_info.get('phone_number', '')
             if not phone_number:
                 raise ValueError("Phone number not found")
 
-            # Format the phone number
             if not phone_number.startswith('+'):
                 phone_number = f"+{phone_number.lstrip('0')}"
 

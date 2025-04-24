@@ -1,19 +1,50 @@
 services:
-  - type: web
-    name: customer-order-api
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn customer_order_api.wsgi:application --bind 0.0.0.0:$PORT"
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: customer_order_api.settings
-      - key: DATABASE_URL
-        value: postgresql://donfiles_online:QAnaEutatJb6hfUivSMrP2P4lbbZnjVk@dpg-d0369b9r0fns73am5te0-a/customer_order_service
+- type: web
+  name: customer-order-api
+  env: python
+  buildCommand: "pip install -r requirements.txt"
+  startCommand: "gunicorn customer_order_api.wsgi:application --bind 0.0.0.0:$PORT"
+  envVars:
+    - key: DJANGO_SETTINGS_MODULE
+      value: customer_order_api.settings
+    - key: DATABASE_URL
+      value: postgresql://donfiles_online:QAnaEutatJb6hfUivSMrP2P4lbbZnjVk@dpg-d0369b9r0fns73am5te0-a.frankfurt-postgres.render.com:5432/customer_order_servicepostgresql://donfiles_online:QAnaEutatJb6hfUivSMrP2P4lbbZnjVk@dpg-d0369b9r0fns73am5te0-a.frankfurt-postgres.render.com:5432/customer_order_service
+ 
 
 
-
-
-
+- type: web
+  name: customer-order-keycloak
+  runtime: docker
+  dockerfilePath: Dockerfile.keycloak
+  plan: starter
+  region: frankfurt
+  healthCheckPath: /health/ready
+  envVars:
+    - key: PORT
+      value: 10000
+    - key: KEYCLOAK_ADMIN
+      sync: false
+    - key: QUARKUS_LOG_HANDLER_FILE_ENABLE
+      value: true
+    - key: QUARKUS_LOG_FILE_ENABLE
+      value: true  
+    - key: KEYCLOAK_ADMIN_PASSWORD
+      sync: false
+    - key: KC_DB_URL
+      value: jdbc:postgresql://dpg-d0369b9r0fns73am5te0-a.frankfurt-postgres.render.com:5432/customer_order_service?sslmode=require
+      value: donfiles_online
+    - key: KC_DB_PASSWORD
+      sync: false
+    - key: KC_HOSTNAME_URL
+      value: https://customer-order-keycloak.onrender.com
+    - key: KC_PROXY
+      value: edge
+    - key: KC_HOSTNAME_STRICT
+      value: "false"
+    - key: JAVA_OPTS_APPEND
+      value: "-Dkeycloak.profile.feature.upload_scripts=enabled" 
+      #  " -Dkeycloak.profile=preview -Djgroups.dns.query= -Dkc.cache-stack=kubernetes" 
+     
 
 
 

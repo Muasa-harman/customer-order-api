@@ -1,86 +1,61 @@
 customer-order-service/
-├── api/                          # Django project
-│   ├── customers/                # App for customer logic
-│   │   ├── models.py             # Customer model
-│   │   ├── schema.py             # GraphQL types/queries/mutations
-│   ├── orders/                   # App for order logic
-│   │   ├── models.py             # Order model
-│   │   ├── schema.py             # GraphQL types/queries/mutations
-│   ├── config/                   # Django settings
+├── api/                          
+│   ├── customers/                
+│   │   ├── models.py            
+│   │   ├── schema.py             
+│   ├── orders/                   
+│   │   ├── models.py             
+│   │   ├── schema.py             
+│   ├── config/      
 │   │   ├── settings/
 │   │   │   ├── base.py
-│   │   │   ├── production.py    # K8s/Ansible-managed settings
+│   │   │   ├── production.py    
 │   │   │   └── local.py
-│   ├── schema.py                 # Root GraphQL schema
+│   ├── schema.py        
 ├── deployments/
-│   ├── helm/                     # Helm chart
+│   ├── helm/   
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml
 │   │   └── templates/
 │   │       ├── deployment.yaml
 │   │       ├── service.yaml
 │   │       └── ingress.yaml
-│   ├── ansible/                  # Ansible playbooks
+│   ├── ansible/         
 │   │   ├── playbooks/
-│   │   │   ├── deploy.yml       # For non-K8s Ubuntu servers
+│   │   │   ├── deploy.yml       
 │   │   │   └── postgresql.yml
 │   │   └── roles/
 │   │       └── django-app/
-├── tests/                        # Test suite
+├── tests/        
 │   ├── unit/
 │   │   ├── test_models.py
 │   │   └── test_schemas.py
 │   └── integration/
 │       └── test_auth.py
-├── Dockerfile                    # Multi-stage build
-├── docker-compose.yml            # Local Postgres + Django
-├── .github/workflows/            # CI/CD
+├── Dockerfile             
+├── docker-compose.yml           
+├── .github/workflows/            
 │   └── ci-cd.yml
-├── .env.sample                   # Environment variables
-└── README.md                     # Deployment/usage guide
-
-
+├── .env.sample                
+└── README.md                   
 customer-order-service/
 ├── api/
-│   ├── users/                     # New app for authentication
-│   │   ├── models.py             # Custom user model (if needed)
-│   │   ├── schema.py             # Auth mutations/queries (login, tokens)
-│   │   ├── middleware.py         # Custom auth middleware
-│   │   ├── backends.py           # OIDC auth backend
-│   │   └── admin.py              # Custom admin auth config
+│   ├── users/                    
+│   │   ├── models.py             
+│   │   ├── schema.py            
+│   │   ├── middleware.py        
+│   │   ├── backends.py         
+│   │   └── admin.py           
 │   ├── customers/
 │   ├── orders/
 │   ├── config/
-│   └── schema.py                 # Merge auth schemas here
+│   └── schema.py                
 ├── deployments/
 │   ├── helm/
 │   │   └── templates/
-│   │       └── configmap.yaml    # Store OIDC env vars here
+│   │       └── configmap.yaml    
 ├── tests/
 │   ├── integration/
-│   │   └── test_auth.py          # Auth test cases
-└── .env.sample                   # Add OIDC_CLIENT_ID/SECRET
+│   │   └── test_auth.py        
+└── .env.sample                  
 
-
-
-# requirements.txt
-# pip freeze > requirements.txt
-# myproject/
-# ├── myapp/
-# ├── manage.py
-# ├── requirements.txt  👈
-# pip install -r requirements.txt
-# Django>=4.2
-# mozilla-django-oidc>=2.0.0
-# graphene-django
-
-
-customer_order_api/
-├── schema.py           # Root schema
-├── urls.py
-├── settings.py
-└── order_api/  # Customer-specific schema
-── schema.py           # Root schema
-├── urls.py
-├── settings.py
-└── customer_schema.p── schema.py           # Order-specific schema

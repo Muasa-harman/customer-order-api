@@ -51,7 +51,6 @@ class Orders(models.Model):
     total_price = models.FloatField(blank=True, null=True)
     status = models.CharField(max_length=20)
     order_details = models.TextField()
-    # order_details = models.CharField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     created_by = models.UUIDField()

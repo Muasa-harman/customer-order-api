@@ -7,7 +7,7 @@ from keycloak import KeycloakOpenID
 
 def load_keycloak_user_info(auth_header: str) -> Dict[str, Any]:
     try:
-        # Validate authorization header
+      
         if not auth_header or not auth_header.startswith('Bearer '):
             raise GraphQLError('Invalid authorization header')
 
